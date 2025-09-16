@@ -7,6 +7,10 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # agents = {
+    #   url = "path:/home/pl/code/palekiwi-labs/agents/60d61319e96e82b09aa294ba03ec91816ae13f3e";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 
   outputs = { nixpkgs, fenix, ... }:
@@ -16,19 +20,11 @@
       rustToolchain = fenix.packages.${system}.stable.toolchain;
 
       # Common build dependencies
-      commonNativeBuildInputs = with pkgs; [ pkg-config ];
-      commonBuildInputs = with pkgs; [ openssl ];
-
-      # Common OpenSSL environment
-      opensslEnv = {
-        PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
-        OPENSSL_DIR = "${pkgs.openssl.out}";
-        OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
-        OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include";
-      };
+      commonNativeBuildInputs = [ ];
+      commonBuildInputs = [ ];
     in
     {
-      packages.${system}.default = pkgs.rustPlatform.buildRustPackage ({
+      packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
         pname = "test-runner-mcp";
         version = "0.1.0";
         src = ./.;
@@ -43,10 +39,10 @@
           license = licenses.mit;
           maintainers = [ ];
         };
-      } // opensslEnv);
+      };
 
       devShells.${system}.default = pkgs.mkShell
-        ({
+        {
           buildInputs = [
             rustToolchain
             pkgs.rust-analyzer
@@ -59,6 +55,6 @@
             echo "Rust development environment ready!"
             echo "Rust version: $(rustc --version)"
           '';
-        } // opensslEnv);
+        };
     };
 }
