@@ -8,7 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # agents = {
-    #   url = "path:/home/pl/code/palekiwi-labs/agents/60d61319e96e82b09aa294ba03ec91816ae13f3e";
+    #   url = "path:/home/pl/code/palekiwi-labs/agents";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
   };
@@ -19,9 +19,14 @@
       pkgs = nixpkgs.legacyPackages.${system};
       rustToolchain = fenix.packages.${system}.stable.toolchain;
 
-      # Common build dependencies
-      commonNativeBuildInputs = [ ];
-      commonBuildInputs = [ ];
+      devShellPackages = [
+        rustToolchain
+
+        pkgs.rust-analyzer
+        pkgs.cargo-expand
+        pkgs.cargo-watch
+        pkgs.cargo-edit
+      ];
     in
     {
       packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
@@ -30,9 +35,6 @@
         src = ./.;
 
         cargoHash = "sha256-2oKq9byTo2+RcqpOdL3mQgcZtSeTgTYu2KK68JYEJpg=";
-
-        nativeBuildInputs = commonNativeBuildInputs;
-        buildInputs = commonBuildInputs;
 
         meta = with pkgs.lib; {
           description = "A Rust flake for test-runner-mcp";
@@ -43,13 +45,7 @@
 
       devShells.${system}.default = pkgs.mkShell
         {
-          buildInputs = [
-            rustToolchain
-            pkgs.rust-analyzer
-            pkgs.cargo-expand
-            pkgs.cargo-watch
-            pkgs.cargo-edit
-          ] ++ commonNativeBuildInputs ++ commonBuildInputs;
+          buildInputs = devShellPackages;
 
           shellHook = ''
             echo "Rust development environment ready!"
