@@ -7,10 +7,6 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # agents = {
-    #   url = "path:/home/pl/code/palekiwi-labs/agents";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
   };
 
   outputs = { nixpkgs, fenix, ... }:
