@@ -1,8 +1,9 @@
 use futures::future::join_all;
 use rmcp::{
     ErrorData as McpError, RoleServer, ServerHandler,
-    handler::server::{router::tool::ToolRouter},
+    handler::server::{router::tool::ToolRouter, wrapper::Parameters},
     model::*,
+    schemars,
     service::RequestContext,
     tool, tool_handler, tool_router,
 };
@@ -10,6 +11,15 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use std::{fs};
 use uuid::Uuid;
+
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+pub struct PrReviewArgs {
+    #[schemars(
+        description = "Directory where review files will be created",
+        example = "tmp/agent_reviews"
+    )]
+    pub output_dir: String,
+}
 
 async fn simulate_agent_review(
     agent_id: &str,
@@ -67,8 +77,11 @@ impl AgentTaskRunner {
     #[tool(
         description = "Run parallel PR review with multiple LLM agents. Creates review files from different agent perspectives."
     )]
-    async fn pr_review(&self) -> Result<CallToolResult, McpError> {
-        let output_dir = PathBuf::from("tmp/agent_reviews");
+    async fn pr_review(
+        &self,
+        Parameters(args): Parameters<PrReviewArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        let output_dir = PathBuf::from(&args.output_dir);
 
         let output_dir_clone = output_dir.clone();
         let result = match tokio::task::spawn_blocking(move || fs::create_dir_all(&output_dir_clone)).await {
